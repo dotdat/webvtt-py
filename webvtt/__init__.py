@@ -1,4 +1,5 @@
-__version__ = '0.4.2'
+from __future__ import absolute_import
+__version__ = u'0.4.2'
 
 from .webvtt import *
 from .segmenter import *

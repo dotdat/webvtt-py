@@ -1,4 +1,4 @@
-"""
+u"""
 Usage:
   webvtt segment <file> [--target-duration=SECONDS] [--mpegts=OFFSET] [--output=<dir>]
   webvtt -h | --help
@@ -15,33 +15,34 @@ Examples:
   webvtt segment captions.vtt --output destination/directory
 """
 
+from __future__ import absolute_import
 from docopt import docopt
 
 from . import WebVTTSegmenter, __version__
 
 
 def main():
-    """Main entry point for CLI commands."""
+    u"""Main entry point for CLI commands."""
     options = docopt(__doc__, version=__version__)
-    if options['segment']:
+    if options[u'segment']:
         segment(
-            options['<file>'],
-            options['--output'],
-            options['--target-duration'],
-            options['--mpegts'],
+            options[u'<file>'],
+            options[u'--output'],
+            options[u'--target-duration'],
+            options[u'--mpegts'],
         )
 
 
 def segment(f, output, target_duration, mpegts):
-    """Segment command."""
+    u"""Segment command."""
     try:
         target_duration = int(target_duration)
     except ValueError:
-        exit('Error: Invalid target duration.')
+        exit(u'Error: Invalid target duration.')
 
     try:
         mpegts = int(mpegts)
     except ValueError:
-        exit('Error: Invalid MPEGTS value.')
+        exit(u'Error: Invalid MPEGTS value.')
 
     WebVTTSegmenter().segment(f, output, target_duration, mpegts)

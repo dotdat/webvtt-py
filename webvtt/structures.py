@@ -1,43 +1,46 @@
+from __future__ import division
+from __future__ import absolute_import
 import re
 
 from .errors import MalformedCaptionError
+from itertools import imap
 
-TIMESTAMP_PATTERN = re.compile('(\d+)?:?(\d{2}):(\d{2})[.,](\d{3})')
+TIMESTAMP_PATTERN = re.compile(u'(\d+)?:?(\d{2}):(\d{2})[.,](\d{3})')
 
-__all__ = ['Caption']
+__all__ = [u'Caption']
 
 
 class Caption(object):
 
-    CUE_TEXT_TAGS = re.compile('<.*?>')
+    CUE_TEXT_TAGS = re.compile(u'<.*?>')
 
-    """
+    u"""
     Represents a caption.
     """
-    def __init__(self, start='00:00:00.000', end='00:00:00.000', text=None):
+    def __init__(self, start=u'00:00:00.000', end=u'00:00:00.000', text=None):
         self.start = start
         self.end = end
         self.identifier = None
 
         # If lines is a string convert to a list
-        if text and isinstance(text, str):
+        if text and isinstance(text, unicode):
             text = text.splitlines()
 
         self._lines = text or []
 
     def __repr__(self):
-        return '<%(cls)s start=%(start)s end=%(end)s text=%(text)s>' % {
-            'cls': self.__class__.__name__,
-            'start': self.start,
-            'end': self.end,
-            'text': self.text.replace('\n', '\\n')
+        return u'<%(cls)s start=%(start)s end=%(end)s text=%(text)s>' % {
+            u'cls': self.__class__.__name__,
+            u'start': self.start,
+            u'end': self.end,
+            u'text': self.text.replace(u'\n', u'\\n')
         }
 
     def __str__(self):
-        return '%(start)s %(end)s %(text)s' % {
-            'start': self.start,
-            'end': self.end,
-            'text': self.text.replace('\n', '\\n')
+        return u'%(start)s %(end)s %(text)s' % {
+            u'start': self.start,
+            u'end': self.end,
+            u'text': self.text.replace(u'\n', u'\\n')
         }
 
     def add_line(self, line):
@@ -49,19 +52,19 @@ class Caption(object):
     def _parse_timestamp(self, timestamp):
         res = re.match(TIMESTAMP_PATTERN, timestamp)
         if not res:
-            raise MalformedCaptionError('Invalid timestamp: {}'.format(timestamp))
+            raise MalformedCaptionError(u'Invalid timestamp: {}'.format(timestamp))
 
-        values = list(map(lambda x: int(x) if x else 0, res.groups()))
+        values = list(imap(lambda x: int(x) if x else 0, res.groups()))
         return self._to_seconds(*values)
 
     def _to_timestamp(self, total_seconds):
         hours = int(total_seconds / 3600)
         minutes = int(total_seconds / 60 - hours * 60)
         seconds = total_seconds - hours * 3600 - minutes * 60
-        return '{:02d}:{:02d}:{:06.3f}'.format(hours, minutes, seconds)
+        return u'{:02d}:{:02d}:{:06.3f}'.format(hours, minutes, seconds)
 
     def _clean_cue_tags(self, text):
-        return re.sub(self.CUE_TEXT_TAGS, '', text)
+        return re.sub(self.CUE_TEXT_TAGS, u'', text)
 
     @property
     def start_in_seconds(self):
@@ -93,31 +96,31 @@ class Caption(object):
 
     @property
     def text(self):
-        """Returns the captions lines as a text (without cue tags)"""
+        u"""Returns the captions lines as a text (without cue tags)"""
         return self._clean_cue_tags(self.raw_text)
 
     @property
     def raw_text(self):
-        """Returns the captions lines as a text (may include cue tags)"""
-        return '\n'.join(self.lines)
+        u"""Returns the captions lines as a text (may include cue tags)"""
+        return u'\n'.join(self.lines)
 
     @text.setter
     def text(self, value):
-        if not isinstance(value, str):
-            raise AttributeError('String value expected but received {}.'.format(type(value)))
+        if not isinstance(value, unicode):
+            raise AttributeError(u'String value expected but received {}.'.format(type(value)))
 
         self._lines = value.splitlines()
 
 
 class GenericBlock(object):
-    """Generic class that defines a data structure holding an array of lines"""
+    u"""Generic class that defines a data structure holding an array of lines"""
     def __init__(self):
         self.lines = []
 
 
 class Block(GenericBlock):
     def __init__(self, line_number):
-        super().__init__()
+        super(Block, self).__init__()
         self.line_number = line_number
 
 
@@ -125,11 +128,11 @@ class Style(GenericBlock):
 
     @property
     def text(self):
-        """Returns the style lines as a text"""
-        return ''.join(map(lambda x: x.strip(), self.lines))
+        u"""Returns the style lines as a text"""
+        return u''.join(imap(lambda x: x.strip(), self.lines))
 
     @text.setter
     def text(self, value):
-        if type(value) != str:
-            raise TypeError('The text value must be a string.')
-        self.lines = value.split('\n')
+        if type(value) != unicode:
+            raise TypeError(u'The text value must be a string.')
+        self.lines = value.split(u'\n')

@@ -1,3 +1,5 @@
+from __future__ import with_statement
+from __future__ import absolute_import
 import os
 import unittest
 from shutil import rmtree
@@ -5,10 +7,11 @@ from shutil import rmtree
 from webvtt import WebVTTSegmenter, Caption
 from webvtt.errors import InvalidCaptionsError
 from webvtt import WebVTT
+from io import open
 
 BASE_DIR = os.path.dirname(__file__)
-SUBTITLES_DIR = os.path.join(BASE_DIR, 'subtitles')
-OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
+SUBTITLES_DIR = os.path.join(BASE_DIR, u'subtitles')
+OUTPUT_DIR = os.path.join(BASE_DIR, u'output')
 
 
 class WebVTTSegmenterTestCase(unittest.TestCase):
@@ -25,9 +28,9 @@ class WebVTTSegmenterTestCase(unittest.TestCase):
 
     def test_invalid_captions(self):
         self.assertRaises(
-            FileNotFoundError,
+            OSError,
             self.segmenter.segment,
-            'text'
+            u'text'
         )
 
         self.assertRaises(
@@ -40,37 +43,37 @@ class WebVTTSegmenterTestCase(unittest.TestCase):
         self.assertRaises(
             InvalidCaptionsError,
             self.segmenter.segment,
-            [Caption(), Caption(), 'text', Caption()]
+            [Caption(), Caption(), u'text', Caption()]
         )
 
     def test_total_segments(self):
         # segment with default 10 seconds
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR)
         self.assertEqual(self.segmenter.total_segments, 7)
 
         # segment with custom 30 seconds
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR, 30)
         self.assertEqual(self.segmenter.total_segments, 3)
 
     def test_output_folder_is_created(self):
         self.assertFalse(os.path.exists(OUTPUT_DIR))
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR)
         self.assertTrue(os.path.exists(OUTPUT_DIR))
 
     def test_segmentation_files_exist(self):
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR)
-        for i in range(7):
+        for i in xrange(7):
             self.assertTrue(
-                os.path.exists(os.path.join(OUTPUT_DIR, 'fileSequence{}.webvtt'.format(i)))
+                os.path.exists(os.path.join(OUTPUT_DIR, u'fileSequence{}.webvtt'.format(i)))
             )
-        self.assertTrue(os.path.exists(os.path.join(OUTPUT_DIR, 'prog_index.m3u8')))
+        self.assertTrue(os.path.exists(os.path.join(OUTPUT_DIR, u'prog_index.m3u8')))
 
     def test_segmentation(self):
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR)
 
         # segment 1 should have caption 1 and 2
@@ -110,64 +113,64 @@ class WebVTTSegmenterTestCase(unittest.TestCase):
         self.assertIn(self.webvtt.captions[15], self.segmenter.segments[6])
 
     def test_segment_content(self):
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR, 10)
 
-        with open(os.path.join(OUTPUT_DIR, 'fileSequence0.webvtt'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(OUTPUT_DIR, u'fileSequence0.webvtt'), u'r', encoding=u'utf-8') as f:
             lines = [line.rstrip() for line in f.readlines()]
 
         expected_lines = [
-            'WEBVTT',
-            'X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000',
-            '',
-            '00:00:00.500 --> 00:00:07.000',
-            'Caption text #1',
-            '',
-            '00:00:07.000 --> 00:00:11.890',
-            'Caption text #2'
+            u'WEBVTT',
+            u'X-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000',
+            u'',
+            u'00:00:00.500 --> 00:00:07.000',
+            u'Caption text #1',
+            u'',
+            u'00:00:07.000 --> 00:00:11.890',
+            u'Caption text #2'
         ]
 
         self.assertListEqual(lines, expected_lines)
 
     def test_manifest_content(self):
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR, 10)
 
-        with open(os.path.join(OUTPUT_DIR, 'prog_index.m3u8'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(OUTPUT_DIR, u'prog_index.m3u8'), u'r', encoding=u'utf-8') as f:
             lines = [line.rstrip() for line in f.readlines()]
 
             expected_lines = [
-                '#EXTM3U',
-                '#EXT-X-TARGETDURATION:{}'.format(self.segmenter.seconds),
-                '#EXT-X-VERSION:3',
-                '#EXT-X-PLAYLIST-TYPE:VOD',
+                u'#EXTM3U',
+                u'#EXT-X-TARGETDURATION:{}'.format(self.segmenter.seconds),
+                u'#EXT-X-VERSION:3',
+                u'#EXT-X-PLAYLIST-TYPE:VOD',
                 ]
 
-            for i in range(7):
+            for i in xrange(7):
                 expected_lines.extend([
-                    '#EXTINF:30.00000',
-                    'fileSequence{}.webvtt'.format(i)
+                    u'#EXTINF:30.00000',
+                    u'fileSequence{}.webvtt'.format(i)
                 ])
 
-            expected_lines.append('#EXT-X-ENDLIST')
+            expected_lines.append(u'#EXT-X-ENDLIST')
 
             for index, line in enumerate(expected_lines):
                 self.assertEqual(lines[index], line)
 
     def test_customize_mpegts(self):
-        self._parse_captions('sample.vtt')
+        self._parse_captions(u'sample.vtt')
         self.segmenter.segment(self.webvtt, OUTPUT_DIR, mpegts=800000)
 
-        with open(os.path.join(OUTPUT_DIR, 'fileSequence0.webvtt'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(OUTPUT_DIR, u'fileSequence0.webvtt'), u'r', encoding=u'utf-8') as f:
             lines = f.readlines()
-            self.assertIn('MPEGTS:800000', lines[1])
+            self.assertIn(u'MPEGTS:800000', lines[1])
 
     def test_segment_from_file(self):
-        self.segmenter.segment(os.path.join(SUBTITLES_DIR, 'sample.vtt'), OUTPUT_DIR),
+        self.segmenter.segment(os.path.join(SUBTITLES_DIR, u'sample.vtt'), OUTPUT_DIR),
         self.assertEqual(self.segmenter.total_segments, 7)
 
     def test_segment_with_no_captions(self):
-        self.segmenter.segment(os.path.join(SUBTITLES_DIR, 'no_captions.vtt'), OUTPUT_DIR),
+        self.segmenter.segment(os.path.join(SUBTITLES_DIR, u'no_captions.vtt'), OUTPUT_DIR),
         self.assertEqual(self.segmenter.total_segments, 0)
 
     def test_total_segments_readonly(self):
@@ -175,6 +178,6 @@ class WebVTTSegmenterTestCase(unittest.TestCase):
             AttributeError,
             setattr,
             WebVTTSegmenter(),
-            'total_segments',
+            u'total_segments',
             5
         )

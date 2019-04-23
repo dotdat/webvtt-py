@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
 from .generic import GenericParserTestCase
 
 import webvtt
@@ -12,19 +15,19 @@ class WebVTTParserTestCase(GenericParserTestCase):
         self.assertRaises(
             MalformedFileError,
             webvtt.read,
-            self._get_file('invalid.vtt')
+            self._get_file(u'invalid.vtt')
         )
 
     def test_webvtt_captions_not_found(self):
         self.assertRaises(
-            FileNotFoundError,
+            OSError,
             webvtt.read,
-            'some_file'
+            u'some_file'
         )
 
     def test_webvtt_total_length(self):
         self.assertEqual(
-            webvtt.read(self._get_file('sample.vtt')).total_length,
+            webvtt.read(self._get_file(u'sample.vtt')).total_length,
             64
         )
 
@@ -35,18 +38,18 @@ class WebVTTParserTestCase(GenericParserTestCase):
         )
 
     def test_webvtt__parse_captions(self):
-        self.assertTrue(webvtt.read(self._get_file('sample.vtt')).captions)
+        self.assertTrue(webvtt.read(self._get_file(u'sample.vtt')).captions)
 
     def test_webvtt_parse_empty_file(self):
         self.assertRaises(
             MalformedFileError,
             webvtt.read,
-            self._get_file('empty.vtt')
+            self._get_file(u'empty.vtt')
         )
 
     def test_webvtt_parse_get_captions(self):
         self.assertEqual(
-            len(webvtt.read(self._get_file('sample.vtt')).captions),
+            len(webvtt.read(self._get_file(u'sample.vtt')).captions),
             16
         )
 
@@ -54,43 +57,43 @@ class WebVTTParserTestCase(GenericParserTestCase):
         self.assertRaises(
             MalformedCaptionError,
             webvtt.read,
-            self._get_file('invalid_timeframe.vtt')
+            self._get_file(u'invalid_timeframe.vtt')
         )
 
     def test_webvtt_parse_invalid_timeframe_in_cue_text(self):
         self.assertRaises(
             MalformedCaptionError,
             webvtt.read,
-            self._get_file('invalid_timeframe_in_cue_text.vtt')
+            self._get_file(u'invalid_timeframe_in_cue_text.vtt')
         )
 
     def test_webvtt_parse_get_caption_data(self):
-        vtt = webvtt.read(self._get_file('one_caption.vtt'))
+        vtt = webvtt.read(self._get_file(u'one_caption.vtt'))
         self.assertEqual(vtt.captions[0].start_in_seconds, 0.5)
-        self.assertEqual(vtt.captions[0].start, '00:00:00.500')
+        self.assertEqual(vtt.captions[0].start, u'00:00:00.500')
         self.assertEqual(vtt.captions[0].end_in_seconds, 7)
-        self.assertEqual(vtt.captions[0].end, '00:00:07.000')
-        self.assertEqual(vtt.captions[0].lines[0], 'Caption text #1')
+        self.assertEqual(vtt.captions[0].end, u'00:00:07.000')
+        self.assertEqual(vtt.captions[0].lines[0], u'Caption text #1')
         self.assertEqual(len(vtt.captions[0].lines), 1)
 
     def test_webvtt_caption_without_timeframe(self):
         self.assertRaises(
             MalformedCaptionError,
             webvtt.read,
-            self._get_file('missing_timeframe.vtt')
+            self._get_file(u'missing_timeframe.vtt')
         )
 
     def test_webvtt_caption_without_cue_text(self):
-        vtt = webvtt.read(self._get_file('missing_caption_text.vtt'))
+        vtt = webvtt.read(self._get_file(u'missing_caption_text.vtt'))
         self.assertEqual(len(vtt.captions), 5)
 
     def test_webvtt_timestamps_format(self):
-        vtt = webvtt.read(self._get_file('sample.vtt'))
-        self.assertEqual(vtt.captions[2].start, '00:00:11.890')
-        self.assertEqual(vtt.captions[2].end, '00:00:16.320')
+        vtt = webvtt.read(self._get_file(u'sample.vtt'))
+        self.assertEqual(vtt.captions[2].start, u'00:00:11.890')
+        self.assertEqual(vtt.captions[2].end, u'00:00:16.320')
 
     def test_parse_timestamp(self):
-        caption = Caption(start='02:03:11.890')
+        caption = Caption(start=u'02:03:11.890')
         self.assertEqual(
             caption.start_in_seconds,
             7391.89
@@ -100,57 +103,57 @@ class WebVTTParserTestCase(GenericParserTestCase):
         self.assertListEqual([], webvtt.WebVTT().captions)
 
     def test_webvtt_timestamp_format(self):
-        self.assertTrue(WebVTTParser()._validate_timeframe_line('00:00:00.000 --> 00:00:00.000'))
-        self.assertTrue(WebVTTParser()._validate_timeframe_line('00:00.000 --> 00:00.000'))
+        self.assertTrue(WebVTTParser()._validate_timeframe_line(u'00:00:00.000 --> 00:00:00.000'))
+        self.assertTrue(WebVTTParser()._validate_timeframe_line(u'00:00.000 --> 00:00.000'))
 
     def test_metadata_headers(self):
-        vtt = webvtt.read(self._get_file('metadata_headers.vtt'))
+        vtt = webvtt.read(self._get_file(u'metadata_headers.vtt'))
         self.assertEqual(len(vtt.captions), 2)
 
     def test_metadata_headers_multiline(self):
-        vtt = webvtt.read(self._get_file('metadata_headers_multiline.vtt'))
+        vtt = webvtt.read(self._get_file(u'metadata_headers_multiline.vtt'))
         self.assertEqual(len(vtt.captions), 2)
 
     def test_parse_identifiers(self):
-        vtt = webvtt.read(self._get_file('using_identifiers.vtt'))
+        vtt = webvtt.read(self._get_file(u'using_identifiers.vtt'))
         self.assertEqual(len(vtt.captions), 6)
 
-        self.assertEqual(vtt.captions[1].identifier, 'second caption')
+        self.assertEqual(vtt.captions[1].identifier, u'second caption')
         self.assertEqual(vtt.captions[2].identifier, None)
-        self.assertEqual(vtt.captions[3].identifier, '4')
+        self.assertEqual(vtt.captions[3].identifier, u'4')
 
     def test_parse_with_comments(self):
-        vtt = webvtt.read(self._get_file('comments.vtt'))
+        vtt = webvtt.read(self._get_file(u'comments.vtt'))
         self.assertEqual(len(vtt.captions), 3)
         self.assertListEqual(
             vtt.captions[0].lines,
-            ['- Ta en kopp varmt te.',
-             '- Det är inte varmt.']
+            [u'- Ta en kopp varmt te.',
+             u'- Det är inte varmt.']
         )
         self.assertEqual(
             vtt.captions[2].text,
-            '- Ta en kopp'
+            u'- Ta en kopp'
         )
 
     def test_parse_styles(self):
-        vtt = webvtt.read(self._get_file('styles.vtt'))
+        vtt = webvtt.read(self._get_file(u'styles.vtt'))
         self.assertEqual(len(vtt.captions), 1)
         self.assertEqual(
             vtt.styles[0].text,
-            '::cue {background-image: linear-gradient(to bottom, dimgray, lightgray);color: papayawhip;}'
+            u'::cue {background-image: linear-gradient(to bottom, dimgray, lightgray);color: papayawhip;}'
         )
 
     def test_clean_cue_tags(self):
-        vtt = webvtt.read(self._get_file('cue_tags.vtt'))
+        vtt = webvtt.read(self._get_file(u'cue_tags.vtt'))
         self.assertEqual(
             vtt.captions[1].text,
-            'Like a big-a pizza pie'
+            u'Like a big-a pizza pie'
         )
         self.assertEqual(
             vtt.captions[2].text,
-            'That\'s amore'
+            u'That\'s amore'
         )
 
     def test_parse_captions_with_bom(self):
-        vtt = webvtt.read(self._get_file('captions_with_bom.vtt'))
+        vtt = webvtt.read(self._get_file(u'captions_with_bom.vtt'))
         self.assertEqual(len(vtt.captions), 4)

@@ -1,18 +1,18 @@
 
-__all__ = ['MalformedFileError', 'MalformedCaptionError', 'InvalidCaptionsError', 'MissingFilenameError']
+__all__ = [u'MalformedFileError', u'MalformedCaptionError', u'InvalidCaptionsError', u'MissingFilenameError']
 
 
 class MalformedFileError(Exception):
-    """Error raised when the file is not well formatted"""
+    u"""Error raised when the file is not well formatted"""
 
 
 class MalformedCaptionError(Exception):
-    """Error raised when a caption is not well formatted"""
+    u"""Error raised when a caption is not well formatted"""
 
 
 class InvalidCaptionsError(Exception):
-    """Error raised when passing wrong captions to the segmenter"""
+    u"""Error raised when passing wrong captions to the segmenter"""
 
 
 class MissingFilenameError(Exception):
-    """Error raised when saving a file without filename."""
+    u"""Error raised when saving a file without filename."""
